@@ -506,7 +506,7 @@ const CONFIG = {
     LOGO: "https://raw.githubusercontent.com/miniappprem/image/7ba1c6e3c0e80e1721d9ec5432721bb8d7ebb516/IMG_1446.jpeg",
     BANNIERE: "https://raw.githubusercontent.com/miniappprem/image/7ba1c6e3c0e80e1721d9ec5432721bb8d7ebb516/IMG_1446.jpeg",
 
-    TELEGRAM_USERNAME: "coffee_la33", // Nom d'utilisateur Telegram sans le @
+    TELEGRAM_USERNAME: "coffee_la33", // Pseudo Telegram (sans @)
     PIN_ADMIN: "9494",
 
     SUR_PLACE_DISPONIBLE: true 
@@ -615,22 +615,21 @@ async function init() {
 async function loadProductsFromFirebase() {
     try {
         const querySnapshot = await window.firebaseCollections.getDocs(window.firebaseCollections.collection(window.db, "products"));
-        
-        // Si Firebase contient des produits, on vérifie qu'ils contiennent les nouveaux
         let firebaseProducts = [];
+        
         if (!querySnapshot.empty) {
             querySnapshot.forEach((docSnap) => {
                 firebaseProducts.push({ id: docSnap.id, ...docSnap.data() });
             });
         }
 
-        // On vérifie si la base contient au moins un des nouveaux identifiants
+        // Vérifie si la base contient les nouveaux produits (commençant par 'p_')
         let hasNewProducts = firebaseProducts.some(p => p.id && p.id.startsWith("p_"));
 
         if (hasNewProducts && firebaseProducts.length > 0) {
             products = firebaseProducts;
         } else {
-            // Écrasement automatique avec les nouveaux produits
+            // Force l'écrasement avec les 5 nouveaux produits et leurs vidéos
             products = defaultProducts;
             for (let p of products) {
                 await window.firebaseCollections.setDoc(window.firebaseCollections.doc(window.db, "products", String(p.id)), p);
@@ -975,15 +974,15 @@ function processOrder() {
         txt += `- ${item.qty}x ${item.name} (${item.w}) | ${item.delivery} | ${t}€\n`;
     });
     
-    txt += `\nTOTAL NET : ${orderSum}€`;
+    txt += `\n*TOTAL NET : ${orderSum}€*`;
     
-    // Génération du lien de partage Telegram direct avec pré-remplissage du texte
-    let fullUrl = `https://t.me/share/url?url=${encodeURIComponent('https://t.me/' + CONFIG.TELEGRAM_USERNAME)}&text=${encodeURIComponent(txt)}`;
-
-    if (tg.openTelegramLink) {
-        tg.openTelegramLink(fullUrl);
+    // Ouverture directe du t.me/username avec le texte pré-saisi dans le champ du client
+    let directUrl = `https://t.me/${CONFIG.TELEGRAM_USERNAME}?text=${encodeURIComponent(txt)}`;
+    
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openTelegramLink) {
+        window.Telegram.WebApp.openTelegramLink(directUrl);
     } else {
-        window.location.href = fullUrl;
+        window.location.href = directUrl;
     }
 }
 
