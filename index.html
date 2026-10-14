@@ -506,7 +506,7 @@ const CONFIG = {
     LOGO: "https://raw.githubusercontent.com/miniappprem/image/7ba1c6e3c0e80e1721d9ec5432721bb8d7ebb516/IMG_1446.jpeg",
     BANNIERE: "https://raw.githubusercontent.com/miniappprem/image/7ba1c6e3c0e80e1721d9ec5432721bb8d7ebb516/IMG_1446.jpeg",
 
-    TELEGRAM_LIEN_COMMANDE: "https://t.me/coffee_la33",
+    TELEGRAM_USERNAME: "coffee_la33", // Nom d'utilisateur Telegram sans le https
     PIN_ADMIN: "9494",
 
     SUR_PLACE_DISPONIBLE: true 
@@ -590,7 +590,7 @@ const defaultProducts = [
 ];
 
 let products = [];
-let cart = JSON.parse(localStorage.getItem("ali-cart")) || []; 
+let cart = JSON.parse(localStorage.getItem("coffee33-cart")) || []; 
 let currentProduct = null;
 let selectedVariant = null;
 let selectedDelivery = "Livraison";
@@ -628,8 +628,8 @@ async function loadProductsFromFirebase() {
             }
         }
     } catch(e) {
-        console.log("Erreur Firebase, utilisation du cache local:", e);
-        products = (JSON.parse(localStorage.getItem("ali-products")) || defaultProducts);
+        console.log("Erreur Firebase, utilisation de la liste par défaut:", e);
+        products = defaultProducts;
     }
 }
 
@@ -863,7 +863,7 @@ function addToCartFromModal() {
     let existing = cart.find(x => x.id === currentProduct.id && x.w === selectedVariant.w && x.delivery === selectedDelivery);
     if(existing) existing.qty += 1;
     else cart.push({ id: currentProduct.id, name: currentProduct.n, m: firstMedia, w: selectedVariant.w, p: selectedVariant.p, delivery: selectedDelivery, qty: 1 });
-    localStorage.setItem("ali-cart", JSON.stringify(cart));
+    localStorage.setItem("coffee33-cart", JSON.stringify(cart));
     updateBadge(); closeAllModals(); showToast(`${currentProduct.n} ajouté au panier`);
 }
 
@@ -872,7 +872,7 @@ function updateQty(index, delta) {
     vibe();
     cart[index].qty += delta;
     if(cart[index].qty <= 0) cart.splice(index, 1);
-    localStorage.setItem("ali-cart", JSON.stringify(cart));
+    localStorage.setItem("coffee33-cart", JSON.stringify(cart));
     renderCart(); updateBadge();
 }
 
@@ -966,10 +966,15 @@ function processOrder() {
         txt += `- ${item.qty}x ${item.name} (${item.w}) | ${item.delivery} | ${t}€\n`;
     });
     
-    txt += `\n*TOTAL NET : ${orderSum}€*`;
-    txt = encodeURIComponent(txt);
+    txt += `\nTOTAL NET : ${orderSum}€`;
     
-    tg.openTelegramLink(`${CONFIG.TELEGRAM_LIEN_COMMANDE}?text=${txt}`);
+    let shareUrl = `https://t.me/share/url?url=${encodeURIComponent('https://t.me/' + CONFIG.TELEGRAM_USERNAME)}&text=${encodeURIComponent(txt)}`;
+    
+    if (tg.openTelegramLink) {
+        tg.openTelegramLink(shareUrl);
+    } else {
+        window.open(shareUrl, '_blank');
+    }
 }
 
 // --- PIN PAD ---
