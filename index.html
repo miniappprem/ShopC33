@@ -368,8 +368,8 @@ button{cursor:pointer;border:0}
         <div id="adminFormContainer" style="display:none;margin-top:20px;padding:20px;background:#05070b;border-radius:20px;border:1px solid var(--cyan)">
             <h3 style="margin-top:0; color:var(--yellow)">Éditer / Ajouter un produit</h3>
             <input type="hidden" id="aId">
-            <input class="admin-input" type="text" id="aTitle" placeholder="Titre (ex: White Truffle)">
-            <input class="admin-input" type="text" id="aOrigin" placeholder="Catégorie / Origine (ex: Double Static)">
+            <input class="admin-input" type="text" id="aTitle" placeholder="Titre (ex: CALI ESPAGNOL)">
+            <input class="admin-input" type="text" id="aOrigin" placeholder="Catégorie / Origine (ex: WEED)">
             <input class="admin-input" type="text" id="aTag" placeholder="Tag (ex: PREMIUM)">
             <textarea class="admin-input" id="aDesc" placeholder="Description du produit..." style="resize:vertical; min-height:80px;"></textarea>
             <textarea class="admin-input" id="aMedia" placeholder="Lien(s) Image/Vidéo (séparés par virgules)" style="resize:vertical"></textarea>
@@ -515,15 +515,82 @@ const CONFIG = {
 
 const tg = window.Telegram.WebApp;
 const FALLBACK_IMG = "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400";
-const TARGET_IMAGE = "https://raw.githubusercontent.com/miniappprem/image/08cabb7eaba90cf003a00b6163b2287b2ead25ef/IMG_0273.jpeg";
 
 const defaultProducts = [
-    {id: "1", n: "White Truffle", o: "Double static", t: "70€", d:"Top qualité.", m: [FALLBACK_IMG], v: [{w: "10G", p: 70}]},
-    {id: "9", n: "Mac 11", o: "USA", t: "TOP", d:"Exceptionnel.", m: [TARGET_IMAGE], v: [{w: "5G", p: 60}, {w: "10G", p: 100}, {w: "25G", p: 200}, {w: "50G", p: 340}, {w: "100G", p: 570}]}
+    {
+        id: "p_cali_espagnol",
+        n: "CALI ESPAGNOL 🇨🇴",
+        o: "WEED 🍀",
+        t: "PREMIUM",
+        d: "Cali Espagnol de qualité supérieure.",
+        m: ["https://www.image2url.com/r2/default/videos/1792019445137-234f18ac-9cc4-4e51-8d9f-0e7a75b69f4e.mp4"],
+        v: [
+            {w: "2g", p: 10},
+            {w: "4g", p: 20},
+            {w: "10g", p: 50},
+            {w: "25g", p: 120},
+            {w: "100g", p: 400}
+        ]
+    },
+    {
+        id: "p_cali_mouss",
+        n: "CALI MOUSS 🧽",
+        o: "MONSTER SUMMER ÉDITION ☀️",
+        t: "SUMMER",
+        d: "Cali Mouss Édition Monster Summer.",
+        m: ["https://www.image2url.com/r2/default/videos/1792019516052-ad0621c8-fecb-4e35-859b-75bafb896f1d.mp4"],
+        v: [
+            {w: "1.5g", p: 10},
+            {w: "10g", p: 50},
+            {w: "100g", p: 270}
+        ]
+    },
+    {
+        id: "p_frozen",
+        n: "FROZEN 🥶",
+        o: "TROPICALI FRUIT 🥭",
+        t: "FROZEN",
+        d: "Frozen aux notes fruitées Tropicali.",
+        m: ["https://www.image2url.com/r2/default/videos/1792019556617-71584609-63c9-422c-a344-b68fb1a284af.mp4"],
+        v: [
+            {w: "1g", p: 10},
+            {w: "10g", p: 70},
+            {w: "100g", p: 580}
+        ]
+    },
+    {
+        id: "p_fplus_static",
+        n: "F+ STATIC ⚡️",
+        o: "🏭 F+",
+        t: "STATIC",
+        d: "F+ Static qualité laboratoire.",
+        m: ["https://www.image2url.com/r2/default/videos/1792019595161-e8e3839b-a86f-43f9-b8b7-9ce063891d41.mp4"],
+        v: [
+            {w: "1g", p: 20},
+            {w: "10g", p: 160},
+            {w: "50g", p: 600},
+            {w: "100g", p: 1100}
+        ]
+    },
+    {
+        id: "p_jaune_mousseux",
+        n: "JAUNE MOUSSEUX 🧽",
+        o: "GELATO 🧫",
+        t: "TOP",
+        d: "Jaune Mousseux variété Gelato.",
+        m: ["https://www.image2url.com/r2/default/videos/1792019640981-84388048-fe1b-4cc2-a75c-9c9f290175b7.mp4"],
+        v: [
+            {w: "3g", p: 10},
+            {w: "7g", p: 20},
+            {w: "15g", p: 50},
+            {w: "25g", p: 70},
+            {w: "100g", p: 220}
+        ]
+    }
 ];
 
 let products = [];
-let cart = JSON.parse(localStorage.getItem("ali-cart")) || []; 
+let cart = JSON.parse(localStorage.getItem("coffee33-cart")) || []; 
 let currentProduct = null;
 let selectedVariant = null;
 let selectedDelivery = "Livraison";
@@ -562,7 +629,7 @@ async function loadProductsFromFirebase() {
         }
     } catch(e) {
         console.log("Erreur Firebase, utilisation du cache local:", e);
-        products = (JSON.parse(localStorage.getItem("ali-products")) || defaultProducts);
+        products = (JSON.parse(localStorage.getItem("coffee33-products")) || defaultProducts);
     }
 }
 
@@ -796,7 +863,7 @@ function addToCartFromModal() {
     let existing = cart.find(x => x.id === currentProduct.id && x.w === selectedVariant.w && x.delivery === selectedDelivery);
     if(existing) existing.qty += 1;
     else cart.push({ id: currentProduct.id, name: currentProduct.n, m: firstMedia, w: selectedVariant.w, p: selectedVariant.p, delivery: selectedDelivery, qty: 1 });
-    localStorage.setItem("ali-cart", JSON.stringify(cart));
+    localStorage.setItem("coffee33-cart", JSON.stringify(cart));
     updateBadge(); closeAllModals(); showToast(`${currentProduct.n} ajouté au panier`);
 }
 
@@ -805,7 +872,7 @@ function updateQty(index, delta) {
     vibe();
     cart[index].qty += delta;
     if(cart[index].qty <= 0) cart.splice(index, 1);
-    localStorage.setItem("ali-cart", JSON.stringify(cart));
+    localStorage.setItem("coffee33-cart", JSON.stringify(cart));
     renderCart(); updateBadge();
 }
 
