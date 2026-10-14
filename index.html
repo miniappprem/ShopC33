@@ -590,7 +590,7 @@ const defaultProducts = [
 ];
 
 let products = [];
-let cart = JSON.parse(localStorage.getItem("coffee33-cart")) || []; 
+let cart = JSON.parse(localStorage.getItem("ali-cart")) || []; 
 let currentProduct = null;
 let selectedVariant = null;
 let selectedDelivery = "Livraison";
@@ -629,7 +629,7 @@ async function loadProductsFromFirebase() {
         }
     } catch(e) {
         console.log("Erreur Firebase, utilisation du cache local:", e);
-        products = (JSON.parse(localStorage.getItem("coffee33-products")) || defaultProducts);
+        products = (JSON.parse(localStorage.getItem("ali-products")) || defaultProducts);
     }
 }
 
@@ -863,7 +863,7 @@ function addToCartFromModal() {
     let existing = cart.find(x => x.id === currentProduct.id && x.w === selectedVariant.w && x.delivery === selectedDelivery);
     if(existing) existing.qty += 1;
     else cart.push({ id: currentProduct.id, name: currentProduct.n, m: firstMedia, w: selectedVariant.w, p: selectedVariant.p, delivery: selectedDelivery, qty: 1 });
-    localStorage.setItem("coffee33-cart", JSON.stringify(cart));
+    localStorage.setItem("ali-cart", JSON.stringify(cart));
     updateBadge(); closeAllModals(); showToast(`${currentProduct.n} ajouté au panier`);
 }
 
@@ -872,7 +872,7 @@ function updateQty(index, delta) {
     vibe();
     cart[index].qty += delta;
     if(cart[index].qty <= 0) cart.splice(index, 1);
-    localStorage.setItem("coffee33-cart", JSON.stringify(cart));
+    localStorage.setItem("ali-cart", JSON.stringify(cart));
     renderCart(); updateBadge();
 }
 
