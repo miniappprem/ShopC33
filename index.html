@@ -506,7 +506,7 @@ const CONFIG = {
     LOGO: "https://raw.githubusercontent.com/miniappprem/image/7ba1c6e3c0e80e1721d9ec5432721bb8d7ebb516/IMG_1446.jpeg",
     BANNIERE: "https://raw.githubusercontent.com/miniappprem/image/7ba1c6e3c0e80e1721d9ec5432721bb8d7ebb516/IMG_1446.jpeg",
 
-    TELEGRAM_USERNAME: "coffee_la33", // Nom d'utilisateur Telegram sans le https
+    TELEGRAM_USERNAME: "coffee_la33", // Nom d'utilisateur Telegram sans le @
     PIN_ADMIN: "9494",
 
     SUR_PLACE_DISPONIBLE: true 
@@ -615,20 +615,29 @@ async function init() {
 async function loadProductsFromFirebase() {
     try {
         const querySnapshot = await window.firebaseCollections.getDocs(window.firebaseCollections.collection(window.db, "products"));
+        
+        // Si Firebase contient des produits, on vérifie qu'ils contiennent les nouveaux
+        let firebaseProducts = [];
         if (!querySnapshot.empty) {
-            products = [];
             querySnapshot.forEach((docSnap) => {
-                let data = docSnap.data();
-                products.push({ id: docSnap.id, ...data });
+                firebaseProducts.push({ id: docSnap.id, ...docSnap.data() });
             });
+        }
+
+        // On vérifie si la base contient au moins un des nouveaux identifiants
+        let hasNewProducts = firebaseProducts.some(p => p.id && p.id.startsWith("p_"));
+
+        if (hasNewProducts && firebaseProducts.length > 0) {
+            products = firebaseProducts;
         } else {
+            // Écrasement automatique avec les nouveaux produits
             products = defaultProducts;
             for (let p of products) {
                 await window.firebaseCollections.setDoc(window.firebaseCollections.doc(window.db, "products", String(p.id)), p);
             }
         }
     } catch(e) {
-        console.log("Erreur Firebase, utilisation de la liste par défaut:", e);
+        console.log("Erreur Firebase, chargement produits par défaut:", e);
         products = defaultProducts;
     }
 }
@@ -968,12 +977,13 @@ function processOrder() {
     
     txt += `\nTOTAL NET : ${orderSum}€`;
     
-    let shareUrl = `https://t.me/share/url?url=${encodeURIComponent('https://t.me/' + CONFIG.TELEGRAM_USERNAME)}&text=${encodeURIComponent(txt)}`;
-    
+    // Génération du lien de partage Telegram direct avec pré-remplissage du texte
+    let fullUrl = `https://t.me/share/url?url=${encodeURIComponent('https://t.me/' + CONFIG.TELEGRAM_USERNAME)}&text=${encodeURIComponent(txt)}`;
+
     if (tg.openTelegramLink) {
-        tg.openTelegramLink(shareUrl);
+        tg.openTelegramLink(fullUrl);
     } else {
-        window.open(shareUrl, '_blank');
+        window.location.href = fullUrl;
     }
 }
 
